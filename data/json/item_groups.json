@@ -1563,7 +1563,7 @@
       [ "novel_fantasy", 20 ],
       [ "novel_erotic", 4 ],
       [ "poetry_book", 10 ],
-      [ "jewelry_book", 10 ],
+      [ "jewelry_book", 4 ],
       [ "philosophy_book", 2 ],
       [ "essay_book", 6 ],
       [ "plays_book", 8 ],
@@ -1605,7 +1605,8 @@
       ["eyedrops", 35],
       ["shavingkit", 5],
       ["elec_hairtrimmer", 2],
-      ["nic_gum", 25]
+      ["nic_gum", 25],
+      ["weak_antibiotic", 30]
     ]
   },{
     "type" : "item_group",
@@ -1792,6 +1793,7 @@
       ["concrete", 20],
       ["metal_smoother", 10],
       ["brick_kiln", 5],
+      ["kiln", 2],
       ["brick", 20],
       ["bucket", 5],
       ["con_mix", 5],
@@ -3044,6 +3046,7 @@
       ["suitcase_l", 55],
       ["duffelbag", 20],
       ["pockknife", 14],
+      ["knife_folding", 6],
       ["knife_swissarmy", 6],
       ["multitool", 8],
       ["touring_suit", 20],
@@ -3078,7 +3081,7 @@
       [ "novel_fantasy", 20 ],
       [ "novel_erotic", 4 ],
       [ "poetry_book", 10 ],
-      [ "jewelry_book", 10 ],
+      [ "jewelry_book", 4 ],
       [ "philosophy_book", 2 ],
       [ "essay_book", 6 ],
       [ "plays_book", 8 ],
@@ -3135,7 +3138,7 @@
       [ "novel_mystery", 25 ],
       [ "novel_fantasy", 20 ],
       [ "poetry_book", 10 ],
-      [ "jewelry_book", 10 ],
+      [ "jewelry_book", 4 ],
       [ "plays_book", 8 ],
       [ "tall_tales", 10 ],
       [ "story_book", 4 ],
@@ -3336,7 +3339,7 @@
       [ "poetry_book", 30 ],
       [ "carpentry_book", 24 ],
       [ "scots_cookbook", 30 ],
-      [ "jewelry_book", 30 ],
+      [ "jewelry_book", 15 ],
       [ "manual_capoeira", 9 ],
       [ "manual_centipede", 1 ],
       [ "manual_crane", 1 ],
@@ -3619,7 +3622,8 @@
       ["stethoscope", 35],
       ["jar_3l_glass", 15],
       ["magnifying_glass", 5],
-      ["chem_hydrogen_peroxide", 5]
+      ["chem_hydrogen_peroxide", 5],
+      ["weak_antibiotic", 15]
     ]
   },{
     "type" : "item_group",
@@ -3770,7 +3774,8 @@
       ["oxygen_tank", 50],
       ["smoxygen_tank", 25],
       ["bfipowder", 15],
-      ["quikclot", 10]
+      ["quikclot", 10],
+      ["anesthesia", 20]
     ]
   },{
     "type" : "item_group",
@@ -4072,7 +4077,7 @@
       [ "novel_fantasy", 20 ],
       [ "novel_erotic", 4 ],
       [ "poetry_book", 10 ],
-      [ "jewelry_book", 10 ],
+      [ "jewelry_book", 8 ],
       [ "philosophy_book", 2 ],
       [ "essay_book", 6 ],
       [ "plays_book", 8 ],
@@ -4194,8 +4199,10 @@
       ["pocketwatch", 5],
       ["sf_watch", 10],
       ["survnote", 3],
+      ["holo_cloak", 5],
       ["stillsuit", 5],
-      ["l-stick", 1]
+      ["l-stick", 1],
+      ["q_solarpack", 3]
     ]
   },{
     "type" : "item_group",
@@ -4667,7 +4674,8 @@
       ["eboshi", 1],
       ["kariginu", 2],
       ["kimono", 3],
-      ["l-stick", 1]
+      ["l-stick", 1],
+      ["solarpack", 5]
     ]
   },{
     "type" : "item_group",
@@ -4751,7 +4759,8 @@
       ["bfipowder", 20],
       ["sheath", 10],
       ["bootsheath", 10],
-      ["survnote", 1]
+      ["survnote", 1],
+      ["solarpack", 1]
     ]
   },{
     "type" : "item_group",
@@ -5312,7 +5321,8 @@
       ["radiocontrol", 25],
       ["omnicamera", 7],
       ["chem_nitric_acid", 1],
-      ["l-stick", 1]
+      ["l-stick", 1],
+      ["solarpack", 10]
     ]
   },{
     "type" : "item_group",
@@ -5790,7 +5800,8 @@
       ["beret", 50],
       ["beret_wool", 40],
       ["elbow_pads", 50],
-      ["knee_pads", 50]
+      ["knee_pads", 50],
+      ["solarpack", 5]
     ]
   },{
     "type" : "item_group",
@@ -5820,7 +5831,8 @@
       ["sheath", 10],
       ["bootsheath", 8],
       ["holster", 15],
-      ["sholster", 10]
+      ["sholster", 10],
+      ["solarpack", 5]
     ]
   },{
     "type" : "item_group",
@@ -5893,7 +5905,8 @@
       ["oxygen_tank", 10],
       ["smoxygen_tank", 20],
       ["bfipowder", 15],
-      ["quikclot", 10]
+      ["quikclot", 10],
+      ["weak_antibiotic", 40]
     ]
   },{
     "type" : "item_group",
@@ -6850,10 +6863,17 @@
     "id" : "helicopter",
     "magazine": 100,
     "items":[
+      { "group": "guns_launcher_milspec", "prob": 5 },
+      { "group": "guns_launcher_rocket", "prob": 44 },
+      { "group": "guns_rifle_milspec", "prob": 10 },
+      { "item": "human_flesh", "prob": 4, "count-min": 1, "count-max": 10 },
+      { "item": "bone_human", "prob": 10, "count-min": 1, "count-max": 5 },
+      { "item": "rag_bloody", "prob": 10, "count-min": 1, "count-max": 10 },
+      ["sheet_metal", 22],
+      ["seat", 4],
       ["chain", 20],
       ["power_supply", 16],
       ["antenna", 18],
-      ["m1a", 10],
       ["steel_chunk", 30],
       ["spring", 50],
       ["steel_lump", 30],
@@ -6903,15 +6923,8 @@
       ["molle_pack", 8],
       ["legrig", 10],
       ["rucksack", 20],
-      ["LAW_Packed", 30],
-      ["m3_carlgustav", 1],
       ["gobag", 2],
       ["recipe_raptor", 2],
-      ["84x246mm_he", 3],
-      ["84x246mm_hedp", 2],
-      ["84x246mm_smoke", 3],
-      ["m202_flash", 2],
-      ["m235tpa", 3],
       ["tac_helmet", 5],
       ["tac_fullhelmet", 2],
       ["helmet_lobster", 2],
@@ -6927,7 +6940,8 @@
       ["grapnel", 1],
       ["briefcase", 5],
       ["survnote", 2],
-      ["robot_controls", 3]
+      ["robot_controls", 3],
+      ["solarpack", 1]
     ]
   },{
     "type" : "item_group",
@@ -7159,7 +7173,8 @@
       ["shoulder_strap", 16],
       ["bot_manhack", 1],
       ["bot_grenade_hack", 1],
-      ["l-stick", 1]
+      ["l-stick", 1],
+      ["solarpack", 2]
     ]
   },{
     "type" : "item_group",
@@ -7766,7 +7781,8 @@
       ["toolbox", 1],
       ["smoxygen_tank", 35],
       ["watercannon", 10],
-      ["l-stick", 1]
+      ["l-stick", 1],
+      ["solarpack", 2]
     ]
   },{
     "type" : "item_group",
@@ -8654,6 +8670,7 @@
       {"item": "cig", "prob": 60, "charges-min": 1, "charges-max": 20 },
       ["knife_combat", 30],
       ["pockknife", 30],
+      ["knife_folding", 20],
       ["glasses_safety", 45],
       {"item": "eyedrops", "prob": 10, "charges-min": 1, "charges-max": 10 },
       ["screwdriver", 5],

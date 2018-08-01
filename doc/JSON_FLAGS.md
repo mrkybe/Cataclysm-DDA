@@ -42,11 +42,13 @@ List of known flags, used in both terrain.json and furniture.json
 - ```ALLOW_FIELD_EFFECT``` Apply field effects to items inside ```SEALED``` terrain/furniture.
 - ```AUTO_WALL_SYMBOL``` (only for terrain) The symbol of this terrain will be one of the line drawings (corner, T-intersection, straight line etc.) depending on the adjacent terrains.
 
-Example: `-` and `|` is terrain with the `CONNECT_TO_WALL` flag, `O` does not have it, `X` and `Y` have the `AUTO_WALL_SYMBOL` flag, `X` terrain will be drawn as a T-intersection (connected to west, south and east), `Y` will be drawn as horizontal line (going from west to east, no connection to south).
-```
--X-    -Y-
- |      O
-```
+    Example: `-` and `|` are both terrain with the `CONNECT_TO_WALL` flag. `O` does not have the flag, while `X` and `Y` have the `AUTO_WALL_SYMBOL` flag.
+
+    `X` terrain will be drawn as a T-intersection (connected to west, south and east), `Y` will be drawn as horizontal line (going from west to east, no connection to south).
+    ```
+    -X-    -Y-
+     |      O
+    ```
 
 - ```BARRICADABLE_DOOR``` Door that can be barricaded.
 - ```BARRICADABLE_DOOR_DAMAGED```
@@ -57,12 +59,12 @@ Example: `-` and `|` is terrain with the `CONNECT_TO_WALL` flag, `O` does not ha
 - ```BASHABLE``` Players + Monsters can bash this.
 - ```CHIP``` Used in construction menu to determine if wall can have paint chipped off.
 - ```COLLAPSES``` Has a roof that can collapse.
-- ```CONNECT_TO_WALL``` (only for terrain) This flag has been superseded by the JSON entry "connects_to", but retained for backward compatibility.
+- ```CONNECT_TO_WALL``` (only for terrain) This flag has been superseded by the JSON entry `connects_to`, but is retained for backward compatibility.
 - ```CONSOLE``` Used as a computer.
 - ```CONTAINER``` Items on this square are hidden until looted by the player.
 - ```DECONSTRUCT``` Can be deconstructed.
 - ```DEEP_WATER```
-- ```DESTROY_ITEM``` Items that land here are destroyed. See also NOITEM
+- ```DESTROY_ITEM``` Items that land here are destroyed. See also `NOITEM`
 - ```DIGGABLE``` Digging monsters, seeding monster, digging with shovel, etc.
 - ```DOOR``` Can be opened (used for NPC path-finding).
 - ```EASY_DECONSTRUCT``` Player can deconstruct this without tools.
@@ -72,32 +74,32 @@ Example: `-` and `|` is terrain with the `CONNECT_TO_WALL` flag, `O` does not ha
 - ```FLAMMABLE_ASH``` Burns to ash rather than rubble.
 - ```FLAMMABLE_HARD``` Harder to light on fire, but still possible.
 - ```FLAT``` Player can build and move furniture on.
-- ```GOES_DOWN``` Can use `>` to go down a level.
-- ```GOES_UP``` Can use '<' to go up a level.
+- ```GOES_DOWN``` Can use <kbd>></kbd> to go down a level.
+- ```GOES_UP``` Can use <kbd><</kbd> to go up a level.
 - ```HARVESTED``` Marks the harvested version of a terrain type (e.g. harvesting an apple tree turns it into a harvested tree, which later becomes an apple tree again).
 - ```INDOORS``` Has a roof over it; blocks rain, sunlight, etc.
 - ```LADDER``` This piece of furniture that makes climbing easy (works only with z-level mode).
 - ```LIQUID``` Blocks movement, but isn't a wall (lava, water, etc.)
-- ```LIQUIDCONT``` Furniture that contains liquid, allows for contents to be accessed in some checks even if 'SEALED'.
+- ```LIQUIDCONT``` Furniture that contains liquid, allows for contents to be accessed in some checks even if `SEALED`.
 - ```MINEABLE``` Can be mined with a pickaxe/jackhammer.
-- ```MOUNTABLE``` Suitable for guns with the "MOUNTED_GUN" flag.
+- ```MOUNTABLE``` Suitable for guns with the `MOUNTED_GUN` flag.
 - ```NOCOLLIDE``` Feature that simply doesn't collide with vehicles at all.
-- ```NOITEM``` Items cannot be added here but may overflow to adjacent tiles. See also DESTROY_ITEM
-- ```NO_FLOOR```
+- ```NOITEM``` Items cannot be added here but may overflow to adjacent tiles. See also `DESTROY_ITEM`
+- ```NO_FLOOR``` Things should fall when placed on this tile
 - ```OPENCLOSE_INSIDE``` If it's a door (with an 'open' or 'close' field), it can only be opened or closed if you're inside.
 - ```PAINFUL``` May cause a small amount of pain.
 - ```PERMEABLE``` Permeable for gases.
-- ```PLACE_ITEM``` Valid terrain for place_item() to put items on.
+- ```PLACE_ITEM``` Valid terrain for `place_item()` to put items on.
 - ```PLANT``` A 'furniture' that grows and fruits.
-- ```RAMP```
+- ```RAMP``` Can be used to move up a z-level
 - ```RAMP_END```
 - ```REDUCE_SCENT``` Reduces scent even more; only works if also bashable.
 - ```ROAD``` Flat and hard enough to drive or skate (with rollerblades) on.
 - ```ROUGH``` May hurt the player's feet.
-- ```RUG```
+- ```RUG``` Enables the `Remove Carpet` Construction entry.
 - ```SALT_WATER``` Source of salt water (works for terrains with examine action "water_source").
-- ```SEALED``` Can't use `e` to retrieve items; must smash them open first.
-- ```SEEN_FROM_ABOVE```
+- ```SEALED``` Can't use <kbd>e</kbd> to retrieve items; must smash them open first.
+- ```SEEN_FROM_ABOVE``` Visible from a higher level (provided the tile above has no floor)
 - ```SHARP``` May do minor damage to players/monsters passing through it.
 - ```SHORT``` Feature too short to collide with vehicle protrusions. (mirrors, blades).
 - ```SUPPORTS_ROOF``` Used as a boundary for roof construction.
@@ -107,7 +109,7 @@ Example: `-` and `|` is terrain with the `CONNECT_TO_WALL` flag, `O` does not ha
 - ```TINY``` Feature too short to collide with vehicle undercarriage. Vehicles drive over them with no damage, unless a wheel hits them.
 - ```TRANSPARENT``` Players and monsters can see through/past it. Also sets ter_t.transparent.
 - ```UNSTABLE``` Walking here cause the bouldering effect on the character.
-- ```WALL``` This terrain is an upright obstacle. Used for fungal conversion, and also implies "CONNECT_TO_WALL".
+- ```WALL``` This terrain is an upright obstacle. Used for fungal conversion, and also implies `CONNECT_TO_WALL`.
 
 ### Examine actions
 
@@ -182,6 +184,7 @@ Flags used to describe monsters and define their properties and abilities.
 - ```DISAPPEAR``` Hallucination disappears.
 - ```DISINTEGRATE``` Falls apart.
 - ```EXPLODE``` Damaging explosion.
+- ```FIREBALL``` 10 percent chance to explode in a fireball.
 - ```FUNGUS``` Explodes in spores.
 - ```GAMEOVER``` Game over man! Game over! Defense mode.
 - ```GUILT``` Moral penalty. There is also a flag with a similar effect.
@@ -210,11 +213,14 @@ Flags used to describe monsters and define their properties and abilities.
 - ```ATTACKMON``` Attacks other monsters.
 - ```BADVENOM``` Attack may **severely** poison the player.
 - ```BASHES``` Bashes down doors.
+- ```BIRDFOOD``` Becomes friendly / tamed with bird food.
 - ```BILE_BLOOD``` Makes monster bleed bile.
 - ```BLEED``` Causes the player to bleed.
 - ```BONES``` May produce bones and sinews when butchered.
 - ```BORES``` Tunnels through just about anything (15x bash multiplier: dark wyrms' bash skill 12->180)
 - ```CAN_DIG``` Can dig _and_ walk.
+- ```CATFOOD``` Becomes friendly / tamed with cat food.
+- ```CATTLEFODDER``` Becomes friendly / tamed with cattle fodder.
 - ```CBM_CIV``` May produce a common CBM a power CBM when butchered.
 - ```CBM_OP``` May produce a CBM or two from 'bionics_op' item group when butchered.
 - ```CBM_POWER``` May produce a power CBM when butchered, independent of CBM.
@@ -225,6 +231,8 @@ Flags used to describe monsters and define their properties and abilities.
 - ```CLIMBS``` Can climb.
 - ```DESTROYS``` Bashes down walls and more. (2.5x bash multiplier, where base is the critter's max melee bashing)
 - ```DIGS``` Digs through the ground.
+- ```DOGFOOD``` Becomes friendly / tamed with dog food.
+- ```DRIPS_NAPALM``` Occasionally drips napalm on move.
 - ```ELECTRIC``` Shocks unarmed attackers.
 - ```ELECTRONIC``` e.g. A Robot; affected by emp blasts and other stuff.
 - ```FAT``` May produce fat when butchered.
@@ -240,7 +248,7 @@ Flags used to describe monsters and define their properties and abilities.
 - ```GROUP_BASH``` Gets help from monsters around it when bashing.
 - ```GROUP_MORALE``` More courageous when near friends.
 - ```GUILT``` You feel guilty for killing it.
-- ```HARDTOSHOOT``` Some shots are actually misses.
+- ```HARDTOSHOOT``` It's one size smaller for ranged attacks, no less then MS_TINY 
 - ```HEARS``` It can hear you.
 - ```HIT_AND_RUN``` Flee for several turns after a melee attack.
 - ```HUMAN``` It's a live human, as long as it's alive.
@@ -249,6 +257,7 @@ Flags used to describe monsters and define their properties and abilities.
 - ```KEENNOSE``` Keen sense of smell.
 - ```LARVA``` Creature is a larva. Currently used for gib and blood handling.
 - ```LEATHER``` May produce leather when butchered.
+- ```MILKABLE``` Produces milk when milked.
 - ```NIGHT_INVISIBILITY``` Monster becomes invisible if it's more than one tile away and the lighting on its tile is LL_LOW or less. Visibility is not affected by night vision.
 - ```NOHEAD``` Headshots not allowed!
 - ```NOGIB``` Does not leave gibs / meat chunks when killed with huge damage.
@@ -458,8 +467,9 @@ These branches are also the valid entries for the categories of `dreams` in `dre
 - ```BOARDABLE``` The player can safely move over or stand on this part while the vehicle is moving.
 - ```CAMERA```
 - ```CAMERA_CONTROL```
+- ```CAPTURE_MOSNTER_VEH``` Can be used to capture monsters when mounted on a vehicle.
 - ```CARGO``` Cargo holding area.
-- ```CARGO_LOCKING``` This cargo area is inaccessable to NPCs.
+- ```CARGO_LOCKING``` This cargo area is inaccessible to NPCs.
 - ```CHEMLAB``` Acts as a chemistry set for crafting.
 - ```CHIMES``` Generates continuous noise when used.
 - ```CIRCLE_LIGHT``` Projects a circular radius of light when turned on.
@@ -523,6 +533,7 @@ These branches are also the valid entries for the categories of `dreams` in `dre
 - ```TOOL_SCREWDRIVER``` Attached with screws, can be removed/installed with a screwdriver
 - ```TOOL_WRENCH``` Attached with bolts, can be removed/installed with a wrench
 - ```TRACK``` Allows the vehicle installed on, to be marked and tracked on map.
+- ```TRACKED``` Contributes to steering effectiveness but doesn't count as a steering axle for install difficulty and still contributes to drag for the center of steering calculation.
 - ```TURRET``` Is a weapon turret.
 - ```UNMOUNT_ON_DAMAGE``` Part breaks off the vehicle when destroyed by damage.
 - ```UNMOUNT_ON_MOVE``` Dismount this part when the vehicle moves. Doesn't drop the part, unless you give it special handling.
@@ -684,10 +695,14 @@ Some armor flags, such as `WATCH` and `ALARMCLOCK` are compatible with other ite
 - ```BELTED``` Layer for backpacks and things worn over outerwear.
 - ```BLIND``` Blinds the wearer while worn, and provides nominal protection v. flashbang flashes.
 - ```BLOCK_WHILE_WORN``` Allows worn armor or shields to be used for blocking attacks.
+- ```CLIMATE_CONTROL``` This piece of clothing has climate control of some sort, keeping you warmer or cooler depending on ambient and bodily temperature.
 - ```COLLAR``` This piece of clothing has a wide collar that can keep your mouth warm.
 - ```DEAF``` Makes the player deaf.
 - ```ELECTRIC_IMMUNE``` This gear completely protects you from electric discharges.
+- ```ONLY_ONE``` You can wear only one.
 - ```FANCY``` Wearing this clothing gives a morale bonus if the player has the `Stylish` trait.
+- ```FIX_FARSIGHT``` This gear corrects farsightedness.
+- ```FIX_NEARSIGHT``` This gear corrects nearsightedness.
 - ```FLOTATION``` Prevents the player from drowning in deep water. Also prevents diving underwater.
 - ```FRAGILE``` This gear is less resistant to damage than normal.
 - ```HELMET_COMPAT``` Items that are not SKINTIGHT or OVERSIZE but can be worn with a helmet.
@@ -703,6 +718,8 @@ Some armor flags, such as `WATCH` and `ALARMCLOCK` are compatible with other ite
 - ```RAINPROOF``` Prevents the covered body-part(s) from getting wet in the rain.
 - ```RESTRICT_HANDS``` Prevents the player from wielding a weapon two-handed, forcing one-handed use if the weapon permits it.
 - ```SKINTIGHT``` Undergarment layer.
+- ```SLOWS_MOVEMENT``` This piece of clothing multiplies move cost by 1.1.
+- ```SLOWS_THIRST``` This piece of clothing multiplies the rate at which the player grows thirsty by 0.70.
 - ```STURDY``` This clothing is a lot more resistant to damage than normal.
 - ```SUN_GLASSES``` Prevents glaring when in sunlight.
 - ```SUPER_FANCY``` Gives an additional moral bonus over `FANCY` if the player has the `Stylish` trait.
@@ -742,9 +759,11 @@ Some armor flags, such as `WATCH` and `ALARMCLOCK` are compatible with other ite
 - ```ANTIBIOTIC``` Helps fight infections. Removes disease `infected` and adds disease `recover`.
 - ```ATOMIC_CAFF``` Greatly reduces fatigue and increases radiation dosage.
 - ```BANDAGE``` Stop bleeding.
+- ```BIRDFOOD``` Makes a small bird friendly.
 - ```BLECH``` Causes vomiting.
 - ```CAFF``` Reduces fatigue.
 - ```CATFOOD``` Makes a cat friendly.
+- ```CATTLEFODDER``` Makes a large herbivore friendly.
 - ```CHEW``` Displays message "You chew your %s", but otherwise does nothing.
 - ```CIG``` Alleviates nicotine cravings. Adds disease `cig`.
 - ```COKE``` Decreases hunger. Adds disease `high`.
@@ -762,7 +781,6 @@ Some armor flags, such as `WATCH` and `ALARMCLOCK` are compatible with other ite
 - ```IODINE``` Adds disease `iodine`.
 - ```MARLOSS``` "As you eat the berry, you have a near-religious experience, feeling at one with your surroundings..."
 - ```METH``` Adds disease `meth`
-- ```MUTAGEN``` Causes mutation.
 - ```PKILL``` Reduces pain. Adds disease `pkill[n]` where `[n]` is the level of flag `PKILL_[n]` used on this comestible.
 - ```PLANTBLECH``` Causes vomiting if player does not contain plant mutations
 - ```POISON``` Adds diseases `poison` and `foodpoison`.
@@ -779,34 +797,13 @@ Some armor flags, such as `WATCH` and `ALARMCLOCK` are compatible with other ite
 ### Flags
 
 - ```ACID``` when consumed using the BLECH function, penalties are reduced if acidproof.
+- ```CARNIVORE_OK``` Can be eaten by characters with the Carnivore mutation.
 - ```EATEN_HOT``` Morale bonus for eating hot.
 - ```EATEN_COLD``` Morale bonus for eating cold.
 - ```FERTILIZER``` Works as fertilizer for farming, of if this consumed with the PLANTBLECH function penalties will be reversed for plants.
 - ```HIDDEN_POISON``` ... Food is poisonous, visible only with a certain survival skill level.
 - ```HIDDEN_HALLU``` ... Food causes hallucinations, visible only with a certain survival skill level.
-- ```MUTAGEN_ANY``` Causes mutation in any branch.
-- ```MUTAGEN_ALPHA``` Causes mutation in the alpha branch.
-- ```MUTAGEN_BEAST``` Causes mutation in the beast branch.
-- ```MUTAGEN_BIRD``` Causes mutation in the bird branch.
-- ```MUTAGEN_CATTLE``` Causes mutation in the cattle branch.
-- ```MUTAGEN_CEPHALOPOD``` Causes mutation in the cephalopod branch.
-- ```MUTAGEN_CHIMERA``` Causes mutation in the chimera branch.
-- ```MUTAGEN_ELFA``` Causes mutation in the elfa branch.
-- ```MUTAGEN_FELINE``` Causes mutation in the feline (cat) branch.
-- ```MUTAGEN_FISH``` Causes mutation in the fish branch.
-- ```MUTAGEN_INSECT``` Causes mutation in the insect branch.
-- ```MUTAGEN_LIZARD``` Causes mutation in the lizard branch.
-- ```MUTAGEN_LUPINE``` Causes mutation in the lupine (wolf) branch.
-- ```MUTAGEN_MEDICAL``` Causes mutation in the medical branch.
-- ```MUTAGEN_PLANT``` Causes mutation in the plant branch.
-- ```MUTAGEN_RAPTOR``` Causes mutation in the raptor branch.
-- ```MUTAGEN_RAT``` Causes mutation in the rat branch.
-- ```MUTAGEN_SLIME``` Causes mutation in the slime branch.
-- ```MUTAGEN_SPIDER``` Causes mutation in the spider branch.
-- ```MUTAGEN_TROGLOBITE``` Causes mutation in the troglobite branch.
-- ```MUTAGEN_URSINE``` Causes mutation in the ursine (bear) branch.
-- ```MUTAGEN_STRONG``` Chance of mutating several times.
-- ```MUTAGEN_WEAK``` Causes generic mutation (with less chance to mutate than `MUTAGEN_STRONG`). Still needs one of the mutation flags from the above list.
+- ```MYCUS_OK``` Can be eaten by post-threshold Mycus characters. Only applies to mycus fruits by default.
 - ```PKILL_1``` Minor painkiller.
 - ```PKILL_2``` Moderate painkiller.
 - ```PKILL_3``` Heavy painkiller.
@@ -849,6 +846,8 @@ Some armor flags, such as `WATCH` and `ALARMCLOCK` are compatible with other ite
 - ```NO_BOOM``` Cancels the ammo effect "FLAME".
 - ```NO_UNLOAD``` Cannot be unloaded.
 - ```PRIMITIVE_RANGED_WEAPON``` Allows using non-gunsmith tools to repair it (but not reinforce).
+- ```PUMP_ACTION``` Gun has a rails on its pump action, allowing to install only mods with PUMP_RAIL_COMPATIBLE flag on underbarrel slot.
+- ```PUMP_RAIL_COMPATIBLE``` Mod can be installed on underbarrel slot of guns with rails on their pump action.
 - ```RAPIDFIRE``` Increases rate of fire by 50% for AUTO firing mode
 - ```RELOAD_AND_SHOOT``` Firing automatically reloads and then shoots.
 - ```RELOAD_EJECT``` Ejects shell from gun on reload instead of when fired.
@@ -984,6 +983,8 @@ Those flags are added by the game code to specific items (that specific welder, 
 - ```MOP``` Mop up the mess.
 - ```MP3``` Turn the mp3 player on.
 - ```MP3_ON``` Turn the mp3 player off.
+- ```SOLARPACK``` Unfold solar backpack array.
+- ```SOLARPACK_OFF``` Fold solar backpack array.
 - ```NOISE_EMITTER_OFF``` Turn the noise emitter on.
 - ```NOISE_EMITTER_ON``` Turn the noise emitter off.
 - ```PHEROMONE``` Makes zombies love you.
@@ -1020,12 +1021,15 @@ Those flags are added by the game code to specific items (that specific welder, 
 - ```TURRET``` Activate a turret.
 - ```WASHCLOTHES``` Wash clothes with FILTHY flag.
 - ```WATER_PURIFIER``` Purify water.
+- ```BREAK_STICK``` Breaks long stick into two.
 
 ## Generic
 
 ### Flags
 
+- ```ANESTHESIA``` ... Item is considered anesthesia for the purpose of installing or uninstalling bionics.
 - ```DURABLE_MELEE``` ... Item is made to hit stuff and it does it well, so it's considered to be a lot tougher than other weapons made of the same materials.
+- ```FRAGILE_MELEE``` ... Fragile items that fall apart easily when used as a weapon due to poor construction quality and will break into components when broken.
 - ```GAS_DISCOUNT``` ... Discount cards for the automated gas stations.
 - ```LEAK_ALWAYS``` ... Leaks (may be combined with "RADIOACTIVE").
 - ```LEAK_DAM``` ... Leaks when damaged (may be combined with "RADIOACTIVE").

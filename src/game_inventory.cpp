@@ -12,6 +12,7 @@
 #include "itype.h"
 #include "iuse_actor.h"
 #include "skill.h"
+#include "map.h"
 
 #include <algorithm>
 #include <functional>
@@ -34,18 +35,14 @@ std::string good_bad_none( int value )
 
 }
 
-class inventory_filter_preset : public inventory_selector_preset
+inventory_filter_preset::inventory_filter_preset( const item_location_filter &filter )
+    : filter( filter )
+{}
+
+bool inventory_filter_preset::is_shown( const item_location &location ) const
 {
-    public:
-        inventory_filter_preset( const item_location_filter &filter ) : filter( filter ) {}
-
-        bool is_shown( const item_location &location ) const override {
-            return filter( location );
-        }
-
-    private:
-        item_location_filter filter;
-};
+    return filter( location );
+}
 
 item_location_filter convert_filter( const item_filter &filter )
 {
@@ -366,9 +363,9 @@ class comestible_inventory_preset : public inventory_selector_preset
             }, _( "JOY" ) );
 
             append_cell( [ this ]( const item_location & loc ) {
-                const int spoils = get_edible_comestible( loc ).spoils;
+                const time_duration spoils = get_edible_comestible( loc ).spoils;
                 if( spoils > 0 ) {
-                    return to_string_clipped( time_duration::from_turns( spoils ) );
+                    return to_string_clipped( spoils );
                 }
                 return std::string();
             }, _( "SPOILS IN" ) );
@@ -410,7 +407,7 @@ class comestible_inventory_preset : public inventory_selector_preset
         }
 
         std::string get_denial( const item_location &loc ) const override {
-            if( loc->made_of( LIQUID ) ) {
+            if( loc->made_of( LIQUID ) && !g->m.has_flag( "LIQUIDCONT", loc.position() ) ) {
                 return _( "Can't drink spilt liquids" );
             }
 
@@ -510,8 +507,8 @@ class activatable_inventory_preset : public pickup_inventory_preset
 
             if( !p.has_enough_charges( *loc, false ) ) {
                 return string_format(
-                           ngettext( _( "Needs at least %d charge" ),
-                                     _( "Needs at least %d charges" ), loc->ammo_required() ),
+                           ngettext( "Needs at least %d charge",
+                                     "Needs at least %d charges", loc->ammo_required() ),
                            loc->ammo_required() );
             }
 
@@ -661,9 +658,9 @@ class read_inventory_preset: public pickup_inventory_preset
                     return std::string();  // Just to make sure
                 }
                 // Actual reading time (in turns). Can be penalized.
-                const int actual_turns = p.time_to_read( *loc, *reader ) / MOVES( 1 );
+                const int actual_turns = p.time_to_read( *loc, *reader ) / to_moves<int>( 1_turns );
                 // Theoretical reading time (in turns) based on the reader speed. Free of penalties.
-                const int normal_turns = get_book( loc ).time * reader->read_speed() / MOVES( 1 );
+                const int normal_turns = get_book( loc ).time * reader->read_speed() / to_moves<int>( 1_turns );
                 const std::string duration = to_string_approx( time_duration::from_turns( actual_turns ), false );
 
                 if( actual_turns > normal_turns ) { // Longer - complicated stuff.
@@ -947,6 +944,15 @@ void game_menus::inv::compare( player &p, const tripoint &offset )
         return;
     }
 
+    std::string action;
+    input_context ctxt;
+    ctxt.register_action( "HELP_KEYBINDINGS" );
+    ctxt.register_action( "QUIT" );
+    ctxt.register_action( "UP" );
+    ctxt.register_action( "DOWN" );
+    ctxt.register_action( "PAGE_UP" );
+    ctxt.register_action( "PAGE_DOWN" );
+
     do {
         const auto to_compare = inv_s.execute();
 
@@ -954,8 +960,12 @@ void game_menus::inv::compare( player &p, const tripoint &offset )
             break;
         }
 
-        std::vector<iteminfo> vItemLastCh, vItemCh;
-        std::string sItemLastCh, sItemCh, sItemLastTn, sItemTn;
+        std::vector<iteminfo> vItemLastCh;
+        std::vector<iteminfo> vItemCh;
+        std::string sItemLastCh;
+        std::string sItemCh;
+        std::string sItemLastTn;
+        std::string sItemTn;
 
         to_compare.first->info( true, vItemCh );
         sItemCh = to_compare.first->tname();
@@ -967,25 +977,26 @@ void game_menus::inv::compare( player &p, const tripoint &offset )
 
         int iScrollPos = 0;
         int iScrollPosLast = 0;
-        int ch = ( int ) ' ';
 
         do {
             draw_item_info( 0, ( TERMX - VIEW_OFFSET_X * 2 ) / 2, 0, TERMY - VIEW_OFFSET_Y * 2,
-                            sItemLastCh, sItemLastTn, vItemLastCh, vItemCh, iScrollPosLast, true ); //without getch(
-            ch = draw_item_info( ( TERMX - VIEW_OFFSET_X * 2 ) / 2, ( TERMX - VIEW_OFFSET_X * 2 ) / 2,
-                                 0, TERMY - VIEW_OFFSET_Y * 2, sItemCh, sItemTn, vItemCh, vItemLastCh,
-                                 iScrollPos ).get_first_input();
+                            sItemLastCh, sItemLastTn, vItemLastCh, vItemCh, iScrollPosLast, true );
+            draw_item_info( ( TERMX - VIEW_OFFSET_X * 2 ) / 2, ( TERMX - VIEW_OFFSET_X * 2 ) / 2,
+                            0, TERMY - VIEW_OFFSET_Y * 2, sItemCh, sItemTn, vItemCh, vItemLastCh,
+                            iScrollPos, true );
 
-            if( ch == KEY_PPAGE ) {
+            action = ctxt.handle_input();
+
+            if( action == "UP" || action == "PAGE_UP" ) {
                 iScrollPos--;
                 iScrollPosLast--;
-            } else if( ch == KEY_NPAGE ) {
+            } else if( action == "DOWN" || action == "PAGE_DOWN" ) {
                 iScrollPos++;
                 iScrollPosLast++;
             }
 
-            g->refresh_all();
-        } while( ch == KEY_PPAGE || ch == KEY_NPAGE );
+        } while( action != "QUIT" );
+        g->refresh_all();
     } while( true );
 }
 

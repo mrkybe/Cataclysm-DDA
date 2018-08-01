@@ -3,6 +3,7 @@
 #include "coordinate_conversions.h"
 #include "options.h"
 #include "output.h"
+#include "calendar.h"
 #include "game.h"
 #include "map.h"
 #include "messages.h"
@@ -53,15 +54,15 @@ void weather_effect::glare()
         !g->u.has_bionic( bionic_id( "bio_sunglasses" ) ) ) {
         if( !g->u.has_effect( effect_glare ) ) {
             if( g->u.has_trait( trait_CEPH_VISION ) ) {
-                g->u.add_env_effect( effect_glare, bp_eyes, 2, 4 );
+                g->u.add_env_effect( effect_glare, bp_eyes, 2, 4_turns );
             } else {
-                g->u.add_env_effect( effect_glare, bp_eyes, 2, 2 );
+                g->u.add_env_effect( effect_glare, bp_eyes, 2, 2_turns );
             }
         } else {
             if( g->u.has_trait( trait_CEPH_VISION ) ) {
-                g->u.add_env_effect( effect_glare, bp_eyes, 2, 2 );
+                g->u.add_env_effect( effect_glare, bp_eyes, 2, 2_turns );
             } else {
-                g->u.add_env_effect( effect_glare, bp_eyes, 2, 1 );
+                g->u.add_env_effect( effect_glare, bp_eyes, 2, 1_turns );
             }
         }
     }
@@ -70,22 +71,18 @@ void weather_effect::glare()
 
 int get_hourly_rotpoints_at_temp( int temp );
 
-int get_rot_since( const int startturn, const int endturn, const tripoint &location )
+time_duration get_rot_since( const time_point &start, const time_point &end, const tripoint &location )
 {
-    // Ensure food doesn't rot in ice labs, where the
-    // temperature is much less than the weather specifies.
-    tripoint const omt_pos = ms_to_omt_copy( location );
-    oter_id const & oter = overmap_buffer.ter( omt_pos );
-    // TODO: extract this into a property of the overmap terrain
-    if (is_ot_type("ice_lab", oter)) {
-        return 0;
-    }
-    // TODO: maybe have different rotting speed when underground?
-    int ret = 0;
+    time_duration ret = 0;
+
     const auto &wgen = g->get_cur_weather_gen();
-    for (calendar i(startturn); i.get_turn() < endturn; i += 600) {
+    for( time_point i = start; i < end; i += 1_hours ) {
         w_point w = wgen.get_weather( location, i, g->get_seed() );
-        ret += std::min(600, endturn - i.get_turn()) * get_hourly_rotpoints_at_temp(w.temperature) / 600;
+
+        //Use weather if above ground, use map temp if below
+        double temperature = ( location.z >= 0 ? w.temperature : g->get_temperature( location ) ) + ( g->new_game ? 0 : g->m.temperature( g->m.getlocal( location ) ) );
+
+        ret += std::min( 1_hours, end - i ) / 1_hours * get_hourly_rotpoints_at_temp( temperature ) * 1_turns;
     }
     return ret;
 }
@@ -145,15 +142,15 @@ weather_sum sum_conditions( const time_point &start, const time_point &end,
 /**
  * Determine what a funnel has filled out of game, using funnelcontainer.bday as a starting point.
  */
-void retroactively_fill_from_funnel( item &it, const trap &tr, int startturn, int endturn,
-                                     const tripoint &location )
+void retroactively_fill_from_funnel( item &it, const trap &tr, const time_point &start,
+                                     const time_point &end, const tripoint &location )
 {
-    if( startturn > endturn || !tr.is_funnel() ) {
+    if( start > end || !tr.is_funnel() ) {
         return;
     }
 
-    it.set_birthday( endturn ); // bday == last fill check
-    auto data = sum_conditions( startturn, endturn, location );
+    it.set_birthday( end ); // bday == last fill check
+    auto data = sum_conditions( start, end, location );
 
     // Technically 0.0 division is OK, but it will be cleaner without it
     if( data.rain_amount > 0 ) {
@@ -177,7 +174,7 @@ void item::add_rain_to_container(bool acid, int charges)
         return;
     }
     item ret( acid ? "water_acid" : "water", calendar::turn );
-    const long capa = get_remaining_capacity_for_liquid( ret );
+    const long capa = get_remaining_capacity_for_liquid( ret, true );
     if (contents.empty()) {
         // This is easy. Just add 1 charge of the rain liquid to the container.
         if (!acid) {
@@ -283,12 +280,12 @@ void fill_funnels(int rain_depth_mm_per_hour, bool acid, const trap &tr)
     const auto &funnel_locs = g->m.trap_locations( tr.loadid );
     for( auto loc : funnel_locs ) {
         units::volume maxcontains = 0;
-        auto items = g->m.i_at( loc );
         if (one_in(turns_per_charge)) { // @todo: fixme
             //add_msg("%d mm/h %d tps %.4f: fill",int(calendar::turn),rain_depth_mm_per_hour,turns_per_charge);
             // This funnel has collected some rain! Put the rain in the largest
             // container here which is either empty or contains some mixture of
             // impure water and acid.
+            auto items = g->m.i_at(loc);
             auto container = items.end();
             for( auto candidate_container = items.begin(); candidate_container != items.end();
                  ++candidate_container ) {
@@ -359,7 +356,7 @@ void wet_player( int amount )
 void generic_wet(bool acid)
 {
     fill_water_collectors(4, acid);
-    g->m.decay_fields_and_scent( 15 );
+    g->m.decay_fields_and_scent( 15_turns );
     wet_player( 30 );
 }
 
@@ -370,7 +367,7 @@ void generic_wet(bool acid)
 void generic_very_wet(bool acid)
 {
     fill_water_collectors( 8, acid );
-    g->m.decay_fields_and_scent( 45 );
+    g->m.decay_fields_and_scent( 45_turns );
     wet_player( 60 );
 }
 
@@ -496,6 +493,30 @@ void weather_effect::acid()
     generic_very_wet(true);
 }
 
+static std::string to_string( const weekdays &d )
+{
+    static const std::array<std::string, 7> weekday_names = {{
+            translate_marker( "Sunday" ), translate_marker( "Monday" )
+            translate_marker( "Tuesday" ), translate_marker( "Wednesday" )
+            translate_marker( "Thursday" ), translate_marker( "Friday" )
+            translate_marker( "Saturday" )
+        }
+    };
+    static_assert( static_cast<int>( weekdays::SUNDAY ) == 0,
+                   "weekday_names array is out of sync with weekdays enumeration values" );
+    return _( weekday_names[ static_cast<int>( d ) ].c_str() );
+}
+
+static std::string print_time_just_hour( const time_point &p )
+{
+    const int hour = to_hours<int>( time_past_midnight( p ) );
+    int hour_param = hour % 12;
+    if( hour_param == 0 ) {
+        hour_param = 12;
+    }
+    return string_format( hour < 12 ? _( "%d AM" ) : _( "%d PM" ), hour_param );
+}
+
 // Script from Wikipedia:
 // Current time
 // The current time is hour/minute Eastern Standard Time
@@ -532,7 +553,7 @@ std::string weather_forecast( point const &abs_sm_pos )
     // Current time
     weather_report << string_format(
                        _("The current time is %s Eastern Standard Time.  At %s in %s, it was %s. The temperature was %s. "),
-                       calendar::turn.print_time().c_str(), calendar::turn.print_time(true).c_str(),
+                       to_string_time_of_day( calendar::turn ), print_time_just_hour( calendar::turn ),
                        city_name.c_str(),
                        weather_data(g->weather).name.c_str(), print_temperature(g->temperature).c_str()
                    );
@@ -576,9 +597,9 @@ std::string weather_forecast( point const &abs_sm_pos )
             started_at_night = false;
         }
         if(d > 0 && ((started_at_night && !(d % 2)) || (!started_at_night && d % 2))) {
-            day = string_format( pgettext( "Mon Night", "%s Night" ), c.day_of_week().c_str() );
+            day = string_format( pgettext( "Mon Night", "%s Night" ), to_string( day_of_week( c ) ) );
         } else {
-            day = c.day_of_week();
+            day = to_string( day_of_week( c ) );
         }
         weather_report << string_format(
                            _("%s... %s. Highs of %s. Lows of %s. "),
@@ -703,7 +724,7 @@ int get_local_windpower(double windpower, const oter_id &omter, bool sheltered)
 }
 
 bool warm_enough_to_plant() {
-    return g->get_temperature() >= 50; // semi-appropriate temperature for most plants
+    return g->get_temperature( g-> u.pos() ) >= 50; // semi-appropriate temperature for most plants
 }
 
 ///@}

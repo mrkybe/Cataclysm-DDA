@@ -4,6 +4,8 @@
 
 #include "bodypart.h"
 #include "string_id.h"
+#include "calendar.h"
+
 #include <map>
 #include <string>
 
@@ -25,7 +27,6 @@ using trait_id = string_id<mutation_branch>;
 typedef std::string dis_type;
 
 enum character_type : int {
-    PLTYPE_NULL,
     PLTYPE_CUSTOM,
     PLTYPE_RANDOM,
     PLTYPE_TEMPLATE,
@@ -55,7 +56,7 @@ class addiction
     public:
         add_type type      = ADD_NULL;
         int      intensity = 0;
-        int      sated     = 600;
+        time_duration sated = 1_hours;
 
         addiction() = default;
         addiction( add_type const t, int const i = 1 ) : type {t}, intensity {i} { }

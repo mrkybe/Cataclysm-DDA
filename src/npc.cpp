@@ -74,6 +74,11 @@ void starting_clothes( npc &who, const npc_class_id &type, bool male );
 void starting_inv( npc &who, const npc_class_id &type );
 
 npc::npc()
+    : player()
+    , restock( calendar::before_time_starts )
+    , companion_mission_time( calendar::before_time_starts )
+    , companion_mission_time_ret( calendar::before_time_starts )
+    , last_updated( calendar::turn )
 {
     submap_coords = point( 0, 0 );
     position.x = -1;
@@ -94,15 +99,13 @@ npc::npc()
     my_fac = NULL;
     miss_id = mission_type_id::NULL_ID();
     marked_for_death = false;
+    death_drops = true;
     dead = false;
     hit_by_player = false;
     moves = 100;
     mission = NPC_MISSION_NULL;
     myclass = npc_class_id::NULL_ID();
     patience = 0;
-    restock = -1;
-    companion_mission_time = 0;
-    last_updated = calendar::turn;
     attitude = NPCATT_NULL;
 
     *path_settings = pathfinding_settings( 0, 1000, 1000, 10, true, true, true );
@@ -123,6 +126,10 @@ standard_npc::standard_npc( const std::string &name, const std::vector<itype_id>
     int_cur = std::max( s_int, 0 );
     int_max = std::max( s_int, 0 );
 
+    recalc_hp();
+    for( int i = 0; i < num_hp_parts; i++ ) {
+        hp_cur[i] = hp_max[i];
+    }
     for( auto &e : Skill::skills ) {
         set_skill_level( e.ident(), std::max( sk_lvl, 0 ) );
     }
@@ -305,7 +312,7 @@ void npc::randomize( const npc_class_id &type )
     per_max = the_class.roll_perception();
 
     if( myclass->get_shopkeeper_items() != "EMPTY_GROUP" ) {
-        restock = DAYS( 3 );
+        restock = calendar::turn + 3_days;
         cash += 100000;
     }
 
@@ -1005,7 +1012,7 @@ bool npc::wield( item &it )
     }
 
     if( it.is_null() ) {
-        weapon = ret_null;
+        weapon = item();
         return true;
     }
 
@@ -1409,7 +1416,7 @@ bool npc::wants_to_buy( const item &it, int at_price, int market_price ) const
 
 void npc::shop_restock()
 {
-    restock = calendar::turn + DAYS( 3 );
+    restock = calendar::turn + 3_days;
     if( is_friend() ) {
         return;
     }
@@ -1550,7 +1557,7 @@ bool npc::has_healing_item( bool bleed, bool bite, bool infect )
 
 item &npc::get_healing_item( bool bleed, bool bite, bool infect, bool first_best )
 {
-    item *best = &ret_null;
+    item *best = &null_item_reference();
     visit_items( [&best, bleed, bite, infect, first_best]( item * node ) {
         const auto use = node->type->get_use( "heal" );
         if( use == nullptr ) {
@@ -1978,16 +1985,14 @@ void npc::die( Creature *nkiller )
             g->u.add_memorial_log( pgettext( "memorial_male", "Killed an innocent, %s." ),
                                    pgettext( "memorial_female", "Killed an innocent, %s." ),
                                    name.c_str() );
-            g->u.add_morale( MORALE_KILLED_INNOCENT, -5, 0, DAYS( 2 ) / MINUTES( 1 ),
-                             HOURS( 3 ) / MINUTES( 1 ) );
+            g->u.add_morale( MORALE_KILLED_INNOCENT, -5, 0, 2_days, 3_hours );
         } else {
             g->u.add_memorial_log( pgettext( "memorial_male",
                                              "Killed an innocent person, %s, in cold blood and felt terrible afterwards." ),
                                    pgettext( "memorial_female",
                                              "Killed an innocent person, %s, in cold blood and felt terrible afterwards." ),
                                    name.c_str() );
-            g->u.add_morale( MORALE_KILLED_INNOCENT, -100, 0, DAYS( 2 ) / MINUTES( 1 ),
-                             HOURS( 3 ) / MINUTES( 1 ) );
+            g->u.add_morale( MORALE_KILLED_INNOCENT, -100, 0, 2_days, 3_hours );
         }
     }
 
@@ -2022,7 +2027,7 @@ std::string npc_attitude_name( npc_attitude att )
     }
 
     debugmsg( "Invalid attitude: %d", att );
-    return _( "Unknown" );
+    return _( "Unknown attitude" );
 }
 
 void npc::setID( int i )
@@ -2083,23 +2088,21 @@ void npc::on_unload()
 
 void npc::on_load()
 {
-    const int now = calendar::turn;
+    // Cap at some reasonable number, say 2 days
+    const time_duration dt = std::min( calendar::turn - last_updated, 2_days );
     // TODO: Sleeping, healing etc.
-    int dt = now - last_updated;
     last_updated = calendar::turn;
-    // Cap at some reasonable number, say 2 days (2 * 48 * 30 minutes)
-    dt = std::min( dt, 2 * 48 * MINUTES( 30 ) );
-    int cur = now - dt;
-    add_msg( m_debug, "on_load() by %s, %d turns", name.c_str(), dt );
+    time_point cur = calendar::turn - dt;
+    add_msg( m_debug, "on_load() by %s, %d turns", name, to_turns<int>( dt ) );
     // First update with 30 minute granularity, then 5 minutes, then turns
-    for( ; cur < now - MINUTES( 30 ); cur += MINUTES( 30 ) + 1 ) {
-        update_body( cur, cur + MINUTES( 30 ) );
+    for( ; cur < calendar::turn - 30_minutes; cur += 30_minutes + 1_turns ) {
+        update_body( cur, cur + 30_minutes );
     }
-    for( ; cur < now - MINUTES( 5 ); cur += MINUTES( 5 ) + 1 ) {
-        update_body( cur, cur + MINUTES( 5 ) );
+    for( ; cur < calendar::turn - 5_minutes; cur += 5_minutes + 1_turns ) {
+        update_body( cur, cur + 5_minutes );
     }
-    for( ; cur < now; cur++ ) {
-        update_body( cur, cur + 1 );
+    for( ; cur < calendar::turn; cur += 1_turns ) {
+        update_body( cur, cur + 1_turns );
     }
 
     if( dt > 0 ) {
@@ -2124,27 +2127,7 @@ epilogue::epilogue()
 {
     id = "NONE";
     group = "NONE";
-    is_unique = false;
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "           ###### #### ####   ######    ####    ###   #### ######           " );
-    lines.push_back( "            ##  #  ##   ##     ##  #     ##    ## ## ##  # # ## #           " );
-    lines.push_back( "            ####   ##   ##     ####      ##    ## ## ####    ##             " );
-    lines.push_back( "            ##     ##   ##     ##        ##    ## ##   ###   ##             " );
-    lines.push_back( "            ##     ##   ## ##  ## ##     ## ## ## ## #  ##   ##             " );
-    lines.push_back( "           ####   #### ###### ######    ######  ###  ####   ####            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
-    lines.push_back( "                                                                            " );
+    text = "Error: file lost!";
 }
 
 epilogue_map epilogue::_all_epilogue;
@@ -2154,32 +2137,12 @@ void epilogue::load_epilogue( JsonObject &jsobj )
     epilogue base;
     base.id = jsobj.get_string( "id" );
     base.group = jsobj.get_string( "group" );
-    base.is_unique = jsobj.get_bool( "unique", false );
-    base.lines.clear();
-    base.lines.push_back( jsobj.get_string( "line_01" ) );
-    base.lines.push_back( jsobj.get_string( "line_02" ) );
-    base.lines.push_back( jsobj.get_string( "line_03" ) );
-    base.lines.push_back( jsobj.get_string( "line_04" ) );
-    base.lines.push_back( jsobj.get_string( "line_05" ) );
-    base.lines.push_back( jsobj.get_string( "line_06" ) );
-    base.lines.push_back( jsobj.get_string( "line_07" ) );
-    base.lines.push_back( jsobj.get_string( "line_08" ) );
-    base.lines.push_back( jsobj.get_string( "line_09" ) );
-    base.lines.push_back( jsobj.get_string( "line_10" ) );
-    base.lines.push_back( jsobj.get_string( "line_11" ) );
-    base.lines.push_back( jsobj.get_string( "line_12" ) );
-    base.lines.push_back( jsobj.get_string( "line_13" ) );
-    base.lines.push_back( jsobj.get_string( "line_14" ) );
-    base.lines.push_back( jsobj.get_string( "line_15" ) );
-    base.lines.push_back( jsobj.get_string( "line_16" ) );
-    base.lines.push_back( jsobj.get_string( "line_17" ) );
-    base.lines.push_back( jsobj.get_string( "line_18" ) );
-    base.lines.push_back( jsobj.get_string( "line_19" ) );
-    base.lines.push_back( jsobj.get_string( "line_20" ) );
+    base.text = jsobj.get_string( "text" );
+
     _all_epilogue[base.id] = base;
 }
 
-epilogue *epilogue::find_epilogue( std::string ident )
+epilogue *epilogue::find_epilogue( const std::string &ident )
 {
     epilogue_map::iterator found = _all_epilogue.find( ident );
     if( found != _all_epilogue.end() ) {
@@ -2191,7 +2154,7 @@ epilogue *epilogue::find_epilogue( std::string ident )
     }
 }
 
-void epilogue::random_by_group( std::string group, std::string name )
+void epilogue::random_by_group( std::string group )
 {
     std::vector<epilogue> v;
     for( auto epi : _all_epilogue ) {
@@ -2199,21 +2162,13 @@ void epilogue::random_by_group( std::string group, std::string name )
             v.push_back( epi.second );
         }
     }
-    if( v.size() == 0 ) {
+    if( v.empty() ) {
         return;
     }
     epilogue epi = random_entry( v );
     id = epi.id;
     group = epi.group;
-    is_unique = epi.is_unique;
-    lines.clear();
-    lines = epi.lines;
-    for( auto &ln : lines ) {
-        if( !ln.empty() && ln[0] == '*' ) {
-            ln.replace( 0, name.size(), name );
-        }
-    }
-
+    text = epi.text;
 }
 
 const tripoint npc::no_goal_point( INT_MIN, INT_MIN, INT_MIN );
@@ -2436,24 +2391,27 @@ std::string npc::extended_description() const
 
 void npc::set_companion_mission( npc &p, const std::string &id )
 {
-    //@todo: store them separately
-    //@todo: set time here as well.
-    companion_mission = p.name + id;
+    const point omt_pos = ms_to_omt_copy( g->m.getabs( p.posx(), p.posy() ) );
+    comp_mission.position = tripoint( omt_pos.x, omt_pos.y, p.posz() );
+    comp_mission.mission_id =  id;
+    comp_mission.role_id = p.companion_mission_role_id;
 }
 
 void npc::reset_companion_mission()
 {
-    companion_mission.clear();
+    comp_mission.position = tripoint( -999, -999, -999 );
+    comp_mission.mission_id.clear();
+    comp_mission.role_id.clear();
 }
 
 bool npc::has_companion_mission() const
 {
-    return !companion_mission.empty();
+    return !comp_mission.mission_id.empty();
 }
 
-std::string npc::get_companion_mission() const
+npc_companion_mission npc::get_companion_mission() const
 {
-    return companion_mission;
+    return comp_mission;
 }
 
 attitude_group get_attitude_group( npc_attitude att )
@@ -2485,7 +2443,7 @@ void npc::set_attitude( npc_attitude new_attitude )
         return;
     }
     add_msg( m_debug, "%s changes attitude from %s to %s",
-             npc_attitude_name( attitude ).c_str(), npc_attitude_name( new_attitude ).c_str() );
+             name.c_str(), npc_attitude_name( attitude ).c_str(), npc_attitude_name( new_attitude ).c_str() );
     attitude_group new_group = get_attitude_group( new_attitude );
     attitude_group old_group = get_attitude_group( attitude );
     if( new_group != old_group && !is_fake() ) {
